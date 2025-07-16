@@ -1,73 +1,160 @@
-<nav class="bg-white shadow-lg border-b-2 border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex items-center">
-                <a href="{{ route('home') }}" class="text-2xl font-bold text-primary">
-                    World Store
-                </a>
-            </div>
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="toggler-line"></span>
+            <span class="toggler-line"></span>
+            <span class="toggler-line"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Left Side Navigation -->
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">
+                        <span class="nav-text">Home</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('shop*') ? 'active' : '' }}" href="{{ route('shop') }}">
+                        <span class="nav-text">Shop</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                @if(Route::has('policy'))
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('policy') ? 'active' : '' }}" href="{{ route('policy') }}">
+                        <span class="nav-text">Policy</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                @endif
+            </ul>
+            
+            <!-- Center Logo -->
+             <!-- CENTER LOGO - ADD THIS -->
+            <a class="navbar-brand mx-auto" href="{{ url('/') }}">
+                <img src="{{ asset('images/logo2.png') }}" alt="TekSouq Logo" class="navbar-logo">
+            </a>
 
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-primary transition-colors">
-                    Home
-                </a>
-                <a href="{{ route('products') }}" class="text-gray-700 hover:text-primary transition-colors">
-                    Products
-                </a>
-                <a href="{{ route('policy') }}" class="text-gray-700 hover:text-primary transition-colors">
-                    Policy
-                </a>
-                <a href="{{ route('cart') }}" class="text-gray-700 hover:text-primary transition-colors relative">
-                    Cart
-                    <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        0
-                    </span>
-                </a>
-            </div>
+            <!-- Right Side Navigation -->
+            <ul class="navbar-nav">
+                <!-- Search Icon -->
+                {{-- <li class="nav-item">
+                    <a class="nav-link nav-icon" href="#" data-bs-toggle="modal" data-bs-target="#searchModal" title="Search">
+                        <i class="fas fa-search"></i>
+                        <span class="icon-glow"></span>
+                    </a>
+                </li> --}}
+                
+                <!-- Shopping Cart -->
+                <li class="nav-item">
+                    <a class="nav-link nav-icon position-relative" href="#" title="Shopping Cart">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="cart-badge">0</span>
+                        <span class="icon-glow"></span>
+                    </a>
+                </li>
+                
+                <!-- Authentication Links -->
+                @guest
+                    @if (Route::has('login'))
+                        <li class="nav-item">
+                            <a class="nav-link nav-auth" href="{{ route('login') }}">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                        </li>
+                    @endif
 
-            <div class="hidden md:flex items-center space-x-4">
-                <a href="{{ route('login') }}" class="text-gray-700 hover:text-primary transition-colors">
-                    Login
-                </a>
-                <a href="{{ route('register') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
-                    Register
-                </a>
-            </div>
+                    @if (Route::has('register'))
+                        <li class="nav-item">
+                            <a class="btn btn-primary-nav" href="{{ route('register') }}">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </a>
+                        </li>
+                    @endif
+                @else
+                    <li class="nav-item dropdown">
+                        <a id="navbarDropdown" class="nav-link dropdown-toggle user-dropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="user-name">Hi, {{ explode(' ', Auth::user()->name)[0] }}</span>
+                        </a>
 
-            <div class="md:hidden flex items-center">
-                <button id="mobile-menu-button" class="text-gray-700 hover:text-primary">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
+                        <div class="dropdown-menu dropdown-menu-end user-menu" aria-labelledby="navbarDropdown">
+                            <div class="dropdown-header">
+                                <div class="user-info">
+                                    <div class="user-avatar-large">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="user-details">
+                                        <h6>{{ Auth::user()->name }}</h6>
+                                        <small>{{ Auth::user()->email }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <a class="dropdown-item" href="#profile">
+                                <i class="fas fa-user-circle me-2"></i>My Profile
+                            </a>
+                            <a class="dropdown-item" href="#orders">
+                                <i class="fas fa-shopping-bag me-2"></i>My Orders
+                            </a>
+                            <a class="dropdown-item" href="#wishlist">
+                                <i class="fas fa-heart me-2"></i>Wishlist
+                            </a>
+                            <a class="dropdown-item" href="#settings">
+                                <i class="fas fa-cog me-2"></i>Settings
+                            </a>
+                            
+                            <div class="dropdown-divider"></div>
+                            
+                            <a class="dropdown-item logout-item" href="{{ route('logout') }}"
+                               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
 
-    <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
-        <div class="px-2 pt-2 pb-3 space-y-1">
-            <a href="{{ route('home') }}" class="block px-3 py-2 text-gray-700 hover:bg-amber-50 hover:text-primary">
-                Home
-            </a>
-            <a href="{{ route('products') }}" class="block px-3 py-2 text-gray-700 hover:bg-amber-50 hover:text-primary">
-                Products
-            </a>
-            <a href="{{ route('cart') }}" class="block px-3 py-2 text-gray-700 hover:bg-amber-50 hover:text-primary">
-                Cart
-            </a>
-            <a href="{{ route('login') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary">
-                Login
-            </a>
-            <a href="{{ route('register') }}" class="block px-3 py-2 text-gray-700 hover:bg-gray-50 hover:text-primary">
-                Register
-            </a>
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </div>
+                    </li>
+                @endguest
+            </ul>
         </div>
     </div>
 </nav>
 
-<script>
-    document.getElementById('mobile-menu-button').addEventListener('click', function() {
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenu.classList.toggle('hidden');
-    });
-</script>
+<!-- Search Modal -->
+{{-- <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content search-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="searchModalLabel">Search Products</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="search-form">
+                    <div class="search-input-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="form-control search-input" placeholder="Search for smartwatches, accessories..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary-nav search-btn">Search</button>
+                    </div>
+                </form>
+                <div class="search-suggestions">
+                    <h6>Popular Searches</h6>
+                    <div class="suggestion-tags">
+                        <span class="tag">Apple Watch</span>
+                        <span class="tag">Samsung Galaxy</span>
+                        <span class="tag">Fitness Tracker</span>
+                        <span class="tag">Sport Band</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> --}}

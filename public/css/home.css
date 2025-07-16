@@ -1,0 +1,179 @@
+/* HERO SECTION STYLES - Fixed */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+    height: 90vh !important;
+    min-height: 650px !important;
+}
+
+.hero-background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/images/background.png') center/cover no-repeat !important;
+    background-attachment: fixed;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(10, 10, 26, 0.7) 0%, rgba(26, 11, 46, 0.6) 50%, rgba(22, 33, 62, 0.7) 100%) !important;
+    z-index: 1;
+}
+
+.hero-row {
+    height: 90vh !important;
+    min-height: 650px !important;
+}
+
+.hero-content {
+    z-index: 2;
+    position: relative;
+}
+
+.hero-title {
+    font-size: 3.5rem !important;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4, #8b5cf6) !important;
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.hero-subtitle {
+    font-size: 1.1rem !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    max-width: 450px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary-glow {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.btn-outline-glow {
+    background: transparent !important;
+    border: 2px solid rgba(79, 70, 229, 0.5);
+    color: white !important;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-logo {
+        max-height: 30px !important;
+    }
+    
+    .navbar.scrolled .navbar-logo {
+        max-height: 28px !important;
+    }
+    
+    .main-content {
+        padding-top: 60px !important;
+    }
+    
+    .hero-section {
+        height: 100vh !important;
+        min-height: 600px !important;
+    }
+    
+    .hero-row {
+        height: 100vh !important;
+        min-height: 600px !important;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem !important;
+    }
+
+    /* Additional Hover Effects */
+.btn-primary-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.btn-outline-glow:hover {
+    border-color: #4f46e5;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+}
+
+/* Fix for TECH AT HAND title */
+.hero-title {
+    font-size: 3.5rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -2px;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    color: white;
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #4f46e5, #06b6d4, #8b5cf6) !important;
+    background-size: 200% 200%;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    animation: gradientShift 3s ease infinite;
+    display: inline-block;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Additional Hover Effects */
+.btn-primary-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
+}
+
+.btn-outline-glow:hover {
+    border-color: #4f46e5;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+}
+}
+
