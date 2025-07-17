@@ -48,14 +48,25 @@
                     </a>
                 </li> --}}
                 
-                <!-- Shopping Cart -->
-                <li class="nav-item">
-                    <a class="nav-link nav-icon position-relative" href="#" title="Shopping Cart">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span class="cart-badge">0</span>
-                        <span class="icon-glow"></span>
-                    </a>
-                </li>
+              
+           <!-- Shopping Cart -->
+            <li class="nav-item">
+                <a class="nav-link nav-icon position-relative" href="{{ route('cart.index') }}" title="Shopping Cart">
+                    <i class="fas fa-shopping-bag"></i>
+                    @php
+                        try {
+                            $cartService = app(\App\Services\CartService::class);
+                            $cartCount = $cartService->count();
+                        } catch (\Exception $e) {
+                            $cartCount = 0;
+                        }
+                    @endphp
+                    @if($cartCount > 0)
+                        <span class="cart-badge">{{ $cartCount }}</span>
+                    @endif
+                    <span class="icon-glow"></span>
+                </a>
+            </li>
                 
                 <!-- Authentication Links -->
                 @guest

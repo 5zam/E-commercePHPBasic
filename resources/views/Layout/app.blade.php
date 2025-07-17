@@ -99,6 +99,114 @@
                 });
             });
         });
+
+        // ========== CART FUNCTIONALITY ==========
+        
+        // Update cart count dynamically
+        function updateCartCount() {
+            fetch('/cart/count')
+                .then(response => response.json())
+                .then(data => {
+                    const cartBadge = document.querySelector('.cart-badge');
+                    if (data.count > 0) {
+                        if (cartBadge) {
+                            cartBadge.textContent = data.count;
+                        } else {
+                            // Create badge if it doesn't exist
+                            const cartLink = document.querySelector('.nav-link[title="Shopping Cart"]');
+                            if (cartLink) {
+                                const badge = document.createElement('span');
+                                badge.className = 'cart-badge';
+                                badge.textContent = data.count;
+                                cartLink.appendChild(badge);
+                            }
+                        }
+                    } else {
+                        if (cartBadge) {
+                            cartBadge.remove();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error updating cart count:', error));
+        }
+
+        // Update cart count on page load
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+
+        // Update cart count after form submissions
+        document.addEventListener('submit', function(e) {
+            if (e.target.classList.contains('add-to-cart-form') || 
+                e.target.classList.contains('quantity-form') ||
+                e.target.classList.contains('remove-form')) {
+                setTimeout(updateCartCount, 500);
+            }
+        });
+
+        // Quantity controls for add to cart
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle quantity decrease/increase buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('qty-decrease') || e.target.closest('.qty-decrease')) {
+                    e.preventDefault();
+                    const button = e.target.closest('.qty-decrease');
+                    const input = button.parentElement.querySelector('.qty-input');
+                    let value = parseInt(input.value);
+                    if (value > 1) {
+                        input.value = value - 1;
+                    }
+                }
+                
+                if (e.target.classList.contains('qty-increase') || e.target.closest('.qty-increase')) {
+                    e.preventDefault();
+                    const button = e.target.closest('.qty-increase');
+                    const input = button.parentElement.querySelector('.qty-input');
+                    let value = parseInt(input.value);
+                    let max = parseInt(input.getAttribute('max'));
+                    if (value < max) {
+                        input.value = value + 1;
+                    }
+                }
+            });
+
+            // Handle cart page quantity controls
+            const qtyBtns = document.querySelectorAll('.qty-btn');
+            qtyBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    const input = this.closest('.quantity-controls').querySelector('.qty-input');
+                    let value = parseInt(input.value);
+                    const max = parseInt(input.getAttribute('max'));
+                    
+                    if (action === 'increase' && value < max) {
+                        input.value = value + 1;
+                    } else if (action === 'decrease' && value > 1) {
+                        input.value = value - 1;
+                    }
+                });
+            });
+            
+            // Auto-show update button when quantity changes
+            const qtyInputs = document.querySelectorAll('.qty-input');
+            qtyInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    const form = this.closest('.quantity-form');
+                    if (form) {
+                        const updateBtn = form.querySelector('.update-btn');
+                        if (updateBtn) {
+                            updateBtn.style.display = 'inline-block';
+                        }
+                    }
+                });
+            });
+        });
+
+        // Show success message after adding to cart
+        document.addEventListener('submit', function(e) {
+            if (e.target.classList.contains('add-to-cart-form')) {
+                e.target.querySelector('.add-to-cart-btn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
+                e.target.querySelector('.add-to-cart-btn').disabled = true;
+            }
+        });
     </script>
     
     @stack('scripts')

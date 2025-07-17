@@ -82,7 +82,7 @@
                 <div class="products-grid" id="productsGrid">
                     @if($products && $products->count() > 0)
                         @foreach($products as $product)
-                            @include('shop.partials.product-card', ['product' => $product])
+                            @include('shop.parts.product-card', ['product' => $product])
                         @endforeach
                     @else
                         <div class="col-12">
@@ -149,15 +149,67 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // JavaScript functions for buttons
 function quickView(productId) {
+    // back here to implement quick view functionality
     alert('Quick view for product ' + productId);
 }
 
 function addToWishlist(productId) {
+    // back here to implement wishlist functionality
     alert('Added product ' + productId + ' to wishlist');
 }
 
-function addToCart(productId) {
-    alert('Added product ' + productId + ' to cart');
+// Add to cart functionality with loading state
+document.addEventListener('submit', function(e) {
+    if (e.target.classList.contains('add-to-cart-form')) {
+        const button = e.target.querySelector('.add-to-cart-btn');
+        const originalText = button.innerHTML;
+        
+        // Add loading state
+        button.classList.add('loading');
+        button.disabled = true;
+        
+        // Simulate network request
+        setTimeout(() => {
+            if (button.classList.contains('loading')) {
+                button.classList.remove('loading');
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check me-2"></i>Added!';
+                
+                // Show success notification
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                }, 2000);
+            }
+        }, 1000);
+    }
+});
+
+// Show success notification
+function showNotification(message, type = 'success') {
+    // notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = `
+        top: 100px; 
+        right: 20px; 
+        z-index: 9999; 
+        min-width: 300px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    `;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove notification after 5 seconds
+    setTimeout(() => {
+        if (notification && notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 </script>
 @endpush

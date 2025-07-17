@@ -23,7 +23,17 @@ class Product extends Model
     }
 
     public function getImageUrlAttribute(): string
-    {
-        return $this->image ? asset('storage/' . $this->image) : asset('images/default-product.png');
+{
+    if ($this->image) {
+        $imagePath = public_path('storage/' . $this->image);
+        
+        // إذا كانت الصورة موجودة
+        if (file_exists($imagePath)) {
+            return asset('storage/' . $this->image);
+        }
     }
+    
+    // صورة افتراضية
+    return 'https://via.placeholder.com/300x300/4f46e5/ffffff?text=TekSouq';
+}
 }
