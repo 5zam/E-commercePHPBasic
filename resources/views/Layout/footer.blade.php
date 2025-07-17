@@ -1,13 +1,3 @@
-{{-- <footer class="footer">
-    <div class="container">
-        <div class="row">
-            <div class="col-12 text-center">
-                <p class="mb-0">&copy; {{ date('Y') }} Tek Souq. All rights reserved.</p>
-            </div>
-        </div>
-    </div>
-</footer> --}}
-
 <footer class="footer">
     <div class="footer-background">
         <div class="footer-particles">
@@ -23,18 +13,14 @@
         <!-- Main Footer Content -->
         <div class="row footer-main">
             <!-- Brand Section -->
-            <div class="col-lg-4 col-md-6 mb-1">
+            <div class="col-12 text-center mb-1">
                 <div class="footer-brand">
-                    <div class="brand-container">
-                        <div class="brand-icon">
-                            <i class="fas fa-microchip"></i>
-                        </div>
-                        <span class="brand-text">TEKSOUQ</span>
-                    </div>
+                    <a href="{{ url('/') }}" class="brand-container">
+                        <img src="{{ asset('images/logo.png') }}" alt="TekSouq Logo" class="footer-logo">
+                    </a>
                 </div>
             </div> 
         </div>
-        
         
         <!-- Footer Bottom -->
         <div class="row footer-bottom">

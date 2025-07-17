@@ -13,7 +13,7 @@
     <div class="auth-card">
         <div class="auth-header">
             <a href="{{ route('home') }}" class="auth-logo">
-                <img src="{{ asset('images/logo2.png') }}" alt="TekSouq Logo" class="auth-logo-img">
+                <img src="{{ asset('images/logo.png') }}" alt="TekSouq Logo" class="auth-logo-img">
             </a>
             <h1 class="auth-title">Welcome Back</h1>
             <p class="auth-subtitle">Sign in to your account to continue</p>

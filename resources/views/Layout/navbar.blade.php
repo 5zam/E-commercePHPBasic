@@ -1,15 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
     <div class="container">
-        <!-- Mobile Toggle Button -->
-        <button class="navbar-toggler custom-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="toggler-line"></span>
-            <span class="toggler-line"></span>
-            <span class="toggler-line"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Left Side Navigation -->
-            <ul class="navbar-nav me-auto">
+        <!-- Left Side Navigation - Desktop Only -->
+        <div class="navbar-nav-left d-none d-lg-flex">
+            <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="{{ url('/') }}">
                         <span class="nav-text">Home</span>
@@ -31,42 +24,38 @@
                 </li>
                 @endif
             </ul>
-            
-            <!-- Center Logo -->
-             <!-- CENTER LOGO - ADD THIS -->
-            <a class="navbar-brand mx-auto" href="{{ url('/') }}">
-                <img src="{{ asset('images/logo2.png') }}" alt="TekSouq Logo" class="navbar-logo">
-            </a>
+        </div>
 
-            <!-- Right Side Navigation -->
+        <!-- Center Logo -->
+        <a class="navbar-brand-center" href="{{ url('/') }}">
+            <img src="{{ asset('images/logo.png') }}" alt="TekSouq Logo" class="navbar-logo">
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Right Side Navigation - Desktop Only -->
+        <div class="navbar-nav-right d-none d-lg-flex">
             <ul class="navbar-nav">
-                <!-- Search Icon -->
-                {{-- <li class="nav-item">
-                    <a class="nav-link nav-icon" href="#" data-bs-toggle="modal" data-bs-target="#searchModal" title="Search">
-                        <i class="fas fa-search"></i>
-                        <span class="icon-glow"></span>
+                <!-- Shopping Cart -->
+                <li class="nav-item">
+                    <a class="nav-link nav-icon position-relative" href="{{ route('cart.index') }}" title="Shopping Cart">
+                        <i class="fas fa-shopping-bag"></i>
+                        @php
+                            try {
+                                $cartService = app(\App\Services\CartService::class);
+                                $cartCount = $cartService->count();
+                            } catch (\Exception $e) {
+                                $cartCount = 0;
+                            }
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="cart-badge">{{ $cartCount }}</span>
+                        @endif
                     </a>
-                </li> --}}
-                
-              
-           <!-- Shopping Cart -->
-            <li class="nav-item">
-                <a class="nav-link nav-icon position-relative" href="{{ route('cart.index') }}" title="Shopping Cart">
-                    <i class="fas fa-shopping-bag"></i>
-                    @php
-                        try {
-                            $cartService = app(\App\Services\CartService::class);
-                            $cartCount = $cartService->count();
-                        } catch (\Exception $e) {
-                            $cartCount = 0;
-                        }
-                    @endphp
-                    @if($cartCount > 0)
-                        <span class="cart-badge">{{ $cartCount }}</span>
-                    @endif
-                    <span class="icon-glow"></span>
-                </a>
-            </li>
+                </li>
                 
                 <!-- Authentication Links -->
                 @guest
@@ -91,7 +80,7 @@
                             <div class="user-avatar">
                                 <i class="fas fa-user"></i>
                             </div>
-                            <span class="user-name">Hi, {{ explode(' ', Auth::user()->name)[0] }}</span>
+                            <span class="user-name">{{ explode(' ', Auth::user()->name)[0] }}</span>
                         </a>
 
                         <div class="dropdown-menu dropdown-menu-end user-menu" aria-labelledby="navbarDropdown">
@@ -137,35 +126,75 @@
                 @endguest
             </ul>
         </div>
-    </div>
-</nav>
 
-<!-- Search Modal -->
-{{-- <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content search-modal">
-            <div class="modal-header border-0">
-                <h5 class="modal-title" id="searchModalLabel">Search Products</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form class="search-form">
-                    <div class="search-input-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="form-control search-input" placeholder="Search for smartwatches, accessories..." autocomplete="off">
-                        <button type="submit" class="btn btn-primary-nav search-btn">Search</button>
-                    </div>
-                </form>
-                <div class="search-suggestions">
-                    <h6>Popular Searches</h6>
-                    <div class="suggestion-tags">
-                        <span class="tag">Apple Watch</span>
-                        <span class="tag">Samsung Galaxy</span>
-                        <span class="tag">Fitness Tracker</span>
-                        <span class="tag">Sport Band</span>
-                    </div>
-                </div>
+        <!-- Mobile Menu (Collapsed) - Mobile Only -->
+        <div class="collapse navbar-collapse d-lg-none" id="navbarNav">
+            <div class="mobile-nav-content">
+                <!-- Mobile Navigation -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/') }}">
+                            <i class="fas fa-home me-2"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('shop') }}">
+                            <i class="fas fa-store me-2"></i>Shop
+                        </a>
+                    </li>
+                    @if(Route::has('policy'))
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('policy') }}">
+                            <i class="fas fa-shield-alt me-2"></i>Policy
+                        </a>
+                    </li>
+                    @endif
+                    
+                    <div class="mobile-divider"></div>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('cart.index') }}">
+                            <i class="fas fa-shopping-bag me-2"></i>Cart 
+                            @if($cartCount > 0)
+                                <span class="badge bg-primary ms-2">{{ $cartCount }}</span>
+                            @endif
+                        </a>
+                    </li>
+                    
+                    @guest
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('register') }}">
+                                <i class="fas fa-user-plus me-2"></i>Register
+                            </a>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="#profile">
+                                <i class="fas fa-user-circle me-2"></i>Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#orders">
+                                <i class="fas fa-shopping-bag me-2"></i>My Orders
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('logout') }}"
+                               onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a>
+                            <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" class="d-none">
+                                @csrf
+                            </form>
+                        </li>
+                    @endguest
+                </ul>
             </div>
         </div>
     </div>
-</div> --}}
+</nav>

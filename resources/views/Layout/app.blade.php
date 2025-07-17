@@ -40,7 +40,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JS -->
+ <!-- Custom JS -->
     <script>
         // Navbar scroll effect
         window.addEventListener('scroll', function() {
@@ -98,6 +98,62 @@
                     this.setAttribute('aria-expanded', 'false');
                 });
             });
+        });
+
+        // ========== MOBILE MENU FIX ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            const navLinks = document.querySelectorAll('.mobile-nav-content .nav-link');
+
+            // إغلاق القائمة عند الضغط على أي رابط
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                        navbarCollapse.classList.remove('show');
+                        if (navbarToggler) {
+                            navbarToggler.setAttribute('aria-expanded', 'false');
+                            navbarToggler.classList.add('collapsed');
+                        }
+                    }
+                });
+            });
+
+            // إغلاق القائمة عند الضغط خارجها
+            document.addEventListener('click', function(event) {
+                const isToggler = navbarToggler && navbarToggler.contains(event.target);
+                const isMenu = navbarCollapse && navbarCollapse.contains(event.target);
+                
+                if (!isToggler && !isMenu && navbarCollapse && navbarCollapse.classList.contains('show')) {
+                    navbarCollapse.classList.remove('show');
+                    if (navbarToggler) {
+                        navbarToggler.setAttribute('aria-expanded', 'false');
+                        navbarToggler.classList.add('collapsed');
+                    }
+                }
+            });
+
+            // تأكد من إغلاق القائمة عند تغيير حجم الشاشة للديسكتوب
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 992 && navbarCollapse && navbarCollapse.classList.contains('show')) {
+                    navbarCollapse.classList.remove('show');
+                    if (navbarToggler) {
+                        navbarToggler.setAttribute('aria-expanded', 'false');
+                        navbarToggler.classList.add('collapsed');
+                    }
+                }
+            });
+
+            // إضافة animation للقائمة
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function() {
+                    setTimeout(function() {
+                        if (navbarCollapse.classList.contains('show')) {
+                            navbarCollapse.style.animation = 'slideDown 0.3s ease';
+                        }
+                    }, 10);
+                });
+            }
         });
 
         // ========== CART FUNCTIONALITY ==========
@@ -207,6 +263,7 @@
                 e.target.querySelector('.add-to-cart-btn').disabled = true;
             }
         });
+        
     </script>
     
     @stack('scripts')

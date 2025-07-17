@@ -2,8 +2,7 @@
 
 @section('title', 'TekSouq - Tech At Hand | Premium Smartwatches')
 
-@section('content')
-<!-- Hero Section -->
+@section('content')<!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-background-image"></div>
     <div class="hero-overlay"></div>
@@ -13,13 +12,13 @@
             <div class="col-lg-6">
                 <div class="hero-content">
                     <h1 class="hero-title">
-                        <span class="gradient-text">TECH AT HAND</span>
+                        <span class="hero-text-main">TECH AT HAND</span>
                     </h1>
                     <p class="hero-subtitle">
                         Carefully selected electronic products that combine high performance with smart design — because technology is now part of your lifestyle.
                     </p>
                     <div class="hero-buttons">
-                        <a href="#featured-products" class="btn btn-primary-glow btn-lg me-3">
+                        <a href="{{ route('shop') }}" class="btn btn-primary-glow btn-lg me-3">
                             <i class="fas fa-shopping-bag me-2"></i>Shop Now
                         </a>
                         @guest
@@ -31,18 +30,11 @@
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="hero-products">
-                   
-                </div>
+                <!-- Right side empty for background devices -->
             </div>
         </div>
     </div>
 </section>
-
-
-
-
-
 
 @endsection
 
@@ -91,16 +83,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Newsletter form
-    document.querySelector('.newsletter-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const email = this.querySelector('input[type="email"]').value;
-        if (email) {
-            showNotification('Thank you for subscribing!');
-            this.reset();
-        }
-    });
-    
     function updateCartCounter() {
         const cartBadge = document.querySelector('.navbar .badge');
         if (cartBadge) {
@@ -132,12 +114,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Smooth scrolling for shop now button
-    document.querySelector('.hero-buttons a[href="#featured-products"]').addEventListener('click', function(e) {
-        e.preventDefault();
-        document.querySelector('#featured-products').scrollIntoView({
-            behavior: 'smooth'
+    const shopNowBtn = document.querySelector('.hero-buttons a[href*="shop"]');
+    if (shopNowBtn) {
+        shopNowBtn.addEventListener('click', function(e) {
+            // Let the normal navigation work
         });
-    });
+    }
 });
 </script>
 @endpush
