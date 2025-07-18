@@ -359,3 +359,22 @@ Route::get('/fix-cart', function () {
         ];
     }
 });
+
+
+//test image
+Route::get('/test-images', function() {
+    $products = \App\Models\Product::all();
+    foreach($products as $product) {
+        echo "Product: " . $product->title . "<br>";
+        echo "Image field: " . $product->image . "<br>";
+        echo "Image URL: " . $product->image_url . "<br>";
+        echo "File exists: " . (file_exists(public_path('storage/' . $product->image)) ? 'Yes' : 'No') . "<br><br>";
+    }
+});
+
+Route::get('/debug-storage', function() {
+    echo "Storage path: " . storage_path('app/public/products') . "<br>";
+    echo "Public storage path: " . public_path('storage/products') . "<br>";
+    echo "Storage link exists: " . (is_link(public_path('storage')) ? 'Yes' : 'No') . "<br>";
+    echo "Products folder exists: " . (is_dir(storage_path('app/public/products')) ? 'Yes' : 'No') . "<br>";
+});

@@ -7,23 +7,19 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+     public function index(Request $request)
     {
         $query = Product::query();
 
-        // Search functionality
+        // Search functionality - Fixed field names
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('title', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%");
+            $query->search($search); // Using scope from model
         }
 
         // Price range filter
-        if ($request->filled('min_price')) {
-            $query->where('price', '>=', $request->min_price);
-        }
-        if ($request->filled('max_price')) {
-            $query->where('price', '<=', $request->max_price);
+        if ($request->filled('min_price') || $request->filled('max_price')) {
+            $query->priceRange($request->min_price, $request->max_price);
         }
 
         // Sort options
@@ -46,9 +42,12 @@ class ProductController extends Controller
                 break;
         }
 
+        // Add with category if exists
+        $query->with('category');
+
         $products = $query->paginate(12)->appends(request()->query());
         
-        // Simple filter options (no database dependency)
+        // Simple filter options
         $categories = collect([]);
         $brands = collect([]);
         $priceRange = [
@@ -66,16 +65,16 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('category')->findOrFail($id);
 
-        // Get related products (same category, excluding current product)
-        $relatedProducts = Product::where('category', $product->category)
+        // Get related products
+        $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->where('stock_quantity', '>', 0)
+            ->where('stock', '>', 0)
             ->take(4)
             ->get();
 
-        // Add current product to recently viewed
+        // Add to recently viewed
         $this->addToRecentlyViewed($product->id);
 
         return view('shop.product', compact('product', 'relatedProducts'));
@@ -83,8 +82,9 @@ class ProductController extends Controller
 
     public function category($category)
     {
-        $products = Product::where('category', $category)
-            ->orderBy('is_featured', 'desc')
+        $products = Product::whereHas('category', function($query) use ($category) {
+                $query->where('slug', $category);
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
@@ -101,12 +101,22 @@ class ProductController extends Controller
             return response()->json([]);
         }
 
-        $products = Product::where('name', 'LIKE', "%{$query}%")
-            ->orWhere('description', 'LIKE', "%{$query}%")
+        $products = Product::search($query)
             ->take(5)
-            ->get(['id', 'name', 'price', 'image']);
+            ->get(['id', 'title', 'price', 'image']);
 
-        return response()->json($products);
+        // Format for API response
+        $results = $products->map(function($product) {
+            return [
+                'id' => $product->id,
+                'title' => $product->title,
+                'price' => $product->formatted_price,
+                'image' => $product->image_url,
+                'url' => route('product.show', $product->id)
+            ];
+        });
+
+        return response()->json($results);
     }
 
     public function quickView($id)
@@ -116,6 +126,52 @@ class ProductController extends Controller
         return response()->json([
             'html' => view('shop.partials.quick-view', compact('product'))->render()
         ]);
+    }
+
+    /**
+     * Debug images - Temporary function to check image paths
+     */
+    public function debugImages()
+    {
+        if (!app()->environment('local')) {
+            abort(404);
+        }
+
+        $products = Product::all();
+        $imageInfo = [];
+
+        foreach ($products as $product) {
+            $info = [
+                'id' => $product->id,
+                'title' => $product->title,
+                'image_field' => $product->image,
+                'image_url' => $product->image_url,
+                'has_image' => $product->hasImage(),
+                'possible_paths' => []
+            ];
+
+            if ($product->image) {
+                $paths = [
+                    'storage/' . $product->image,
+                    $product->image,
+                    'storage/products/' . $product->image,
+                    'storage/uploads/' . $product->image,
+                ];
+
+                foreach ($paths as $path) {
+                    $fullPath = public_path($path);
+                    $info['possible_paths'][$path] = [
+                        'exists' => file_exists($fullPath),
+                        'full_path' => $fullPath,
+                        'url' => asset($path)
+                    ];
+                }
+            }
+
+            $imageInfo[] = $info;
+        }
+
+        return response()->json($imageInfo, 200, [], JSON_PRETTY_PRINT);
     }
 
     private function addToRecentlyViewed($productId)
