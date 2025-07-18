@@ -1,0 +1,433 @@
+/* Right Sidebar Filter System */
+
+/* =========================
+   1. HIDE UNNECESSARY ICONS & REPLACE WITH FILTER BUTTON
+   ========================= */
+
+/* Hide the unnecessary quick action buttons */
+.quick-actions {
+    display: none !important;
+}
+
+/* Create filter toggle button in their place */
+.filter-toggle-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    border: none;
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+}
+
+.filter-toggle-btn:hover {
+    background: linear-gradient(135deg, #3730a3, #6d28d9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+}
+
+.filter-toggle-btn.active {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.filter-toggle-btn .filter-icon {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.filter-toggle-btn.active .filter-icon {
+    transform: rotate(90deg);
+}
+
+/* =========================
+   2. MOVE FILTER TO RIGHT SIDE
+   ========================= */
+
+/* Hide original left filter on desktop */
+@media (min-width: 992px) {
+    .col-lg-3 {
+        display: none !important;
+    }
+    
+    .col-lg-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Create right sidebar */
+.right-filter-sidebar {
+    position: fixed;
+    top: 75px;
+    right: 0;
+    width: 320px;
+    height: calc(100vh - 75px);
+    background: white;
+    border-left: 1px solid #e2e8f0;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1050;
+    overflow-y: auto;
+    
+    /* Hidden by default */
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    visibility: hidden;
+}
+
+/* Show when active */
+.right-filter-sidebar.active {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+/* =========================
+   3. SIDEBAR CONTENT STYLING
+   ========================= */
+
+.right-sidebar-content {
+    padding: 1.5rem;
+    height: 100%;
+}
+
+.right-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.right-sidebar-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.close-sidebar-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #a0aec0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-sidebar-btn:hover {
+    color: #e53e3e;
+    background: #fed7d7;
+    transform: rotate(90deg);
+}
+
+/* =========================
+   4. CONTENT ADJUSTMENT WHEN SIDEBAR OPEN
+   ========================= */
+
+.shop-content.right-sidebar-active {
+    margin-right: 320px;
+    transition: margin-right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.shop-header.right-sidebar-active {
+    margin-right: 320px;
+    transition: margin-right 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* =========================
+   5. FILTER STYLING INSIDE RIGHT SIDEBAR
+   ========================= */
+
+.right-sidebar-content .filter-group {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.right-sidebar-content .filter-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.right-sidebar-content .filter-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Search Input */
+.right-sidebar-content .search-input-container {
+    position: relative;
+    display: flex;
+    background: #f8fafc;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.right-sidebar-content .search-input-container:focus-within {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    background: white;
+}
+
+.right-sidebar-content .search-input {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    flex: 1;
+    outline: none;
+}
+
+.right-sidebar-content .search-btn {
+    background: #4f46e5;
+    border: none;
+    padding: 0.75rem 1rem;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.right-sidebar-content .search-btn:hover {
+    background: #3730a3;
+}
+
+/* Price Range */
+.right-sidebar-content .price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.right-sidebar-content .price-input-group {
+    flex: 1;
+}
+
+.right-sidebar-content .price-input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: #718096;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.right-sidebar-content .price-input {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+}
+
+.right-sidebar-content .price-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.right-sidebar-content .price-separator {
+    color: #718096;
+    font-weight: 700;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+/* Quick Categories */
+.right-sidebar-content .quick-category-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.right-sidebar-content .quick-category {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: #4a5568;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #f8fafc;
+    border: 2px solid transparent;
+}
+
+.right-sidebar-content .quick-category:hover {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    transform: translateX(-5px);
+    color: #2d3748;
+    text-decoration: none;
+}
+
+.right-sidebar-content .quick-category.active {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border-color: #4f46e5;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.right-sidebar-content .quick-category i {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Clear Filters Button */
+.right-sidebar-content .clear-filters {
+    color: #e53e3e;
+    font-size: 0.8rem;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid #e53e3e;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.right-sidebar-content .clear-filters:hover {
+    background: #e53e3e;
+    color: white;
+    text-decoration: none;
+}
+
+/* Apply Filters Button */
+.right-sidebar-content .filter-actions {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.right-sidebar-content .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    border: none;
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+}
+
+.right-sidebar-content .btn-primary:hover {
+    background: linear-gradient(135deg, #3730a3, #6d28d9);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+}
+
+/* =========================
+   6. SCROLLBAR STYLING
+   ========================= */
+
+.right-filter-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.right-filter-sidebar::-webkit-scrollbar-track {
+    background: #f8fafc;
+}
+
+.right-filter-sidebar::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 2px;
+}
+
+.right-filter-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* =========================
+   7. RESPONSIVE - HIDE ON MOBILE
+   ========================= */
+
+@media (max-width: 991.98px) {
+    .filter-toggle-btn,
+    .right-filter-sidebar {
+        display: none !important;
+    }
+    
+    .shop-content.right-sidebar-active,
+    .shop-header.right-sidebar-active {
+        margin-right: 0 !important;
+    }
+    
+    /* Show original mobile filter */
+    .col-lg-3 {
+        display: block !important;
+    }
+    
+    .col-lg-9 {
+        flex: 0 0 75%;
+        max-width: 75%;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-lg-3 {
+        display: none !important;
+    }
+    
+    .col-lg-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* =========================
+   8. BACKDROP FOR OVERLAY MODE (OPTIONAL)
+   ========================= */
+
+.right-sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.right-sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}

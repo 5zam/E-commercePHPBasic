@@ -23,7 +23,7 @@
     
     @stack('styles')
 </head>
-<body>
+<body class="@yield('body-class')">
     @include('layout.navbar')
     
     <main class="main-content">
