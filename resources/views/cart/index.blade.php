@@ -155,11 +155,10 @@
                                     <span class="total-value">${{ number_format($total * 1.1, 2) }}</span>
                                 </div>
                                 
-                                <div class="checkout-actions">
-                                    <button class="checkout-btn" onclick="proceedToCheckout()">
-                                        <i class="fas fa-credit-card"></i>
-                                        Proceed to Checkout
-                                    </button>
+                               <a href="{{ route('checkout') }}" class="checkout-btn">
+                                <i class="fas fa-credit-card"></i>
+                                Proceed to Checkout
+                                </a>
                                     
                                     <a href="{{ route('shop') }}" class="continue-shopping">
                                         <i class="fas fa-arrow-left"></i>
