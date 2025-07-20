@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\CartService;
+use App\Models\Order;
+use App\Models\OrderItem;
 
 class CheckoutController extends Controller
 {
@@ -19,14 +21,14 @@ class CheckoutController extends Controller
      */
     public function index()
     {
-        // استخدم CartService بدلاً من session
+        
         $cartItems = $this->cartService->get();
         
         if (empty($cartItems)) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
         
-        // تحويل بيانات Redis لتنسيق Blade
+        
         $products = \App\Models\Product::whereIn('id', array_keys($cartItems))->get();
         
         $cart = [];
@@ -63,14 +65,14 @@ class CheckoutController extends Controller
             'notes' => 'nullable|string|max:1000'
         ]);
         
-        // استخدم CartService بدلاً من session
+        
         $cartItems = $this->cartService->get();
         
         if (empty($cartItems)) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty');
         }
         
-        // تحويل بيانات Redis للمعالجة
+        
         $products = \App\Models\Product::whereIn('id', array_keys($cartItems))->get();
         
         $cart = [];
@@ -92,56 +94,65 @@ class CheckoutController extends Controller
         $tax = $subtotal * 0.1; // 10% tax
         $total = $subtotal + $shippingCost + $tax;
         
-        // Generate order number
-        $orderNumber = 'TK' . date('Y') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
         
-        // Prepare order data
-        $orderData = [
-            'order_number' => $orderNumber,
-            'customer_info' => [
-                'first_name' => $validated['first_name'],
-                'last_name' => $validated['last_name'],
-                'email' => $validated['email'],
-                'phone' => $validated['phone']
-            ],
-            'shipping_info' => [
-                'address' => $validated['address'],
-                'city' => $validated['city'],
-                'postal_code' => $validated['postal_code'] ?? '',
-                'method' => $validated['shipping_method'],
-                'cost' => $shippingCost
-            ],
-            'order_items' => $cart,
-            'pricing' => [
-                'subtotal' => $subtotal,
-                'shipping' => $shippingCost,
-                'tax' => $tax,
-                'total' => $total
-            ],
-            'notes' => $validated['notes'] ?? '',
+        $order = Order::create([
+            'user_id' => auth()->id(),
+            'session_id' => auth()->guest() ? session()->getId() : null,
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'address' => $validated['address'],
+            'city' => $validated['city'],
+            'postal_code' => $validated['postal_code'],
+            'shipping_method' => $validated['shipping_method'],
+            'shipping_cost' => $shippingCost,
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'total' => $total,
+            'notes' => $validated['notes'],
             'status' => 'pending',
-            'created_at' => now()
-        ];
+            'placed_at' => now()
+        ]);
         
-        // Save order to session (in real app, save to database)
-        session(['last_order' => $orderData]);
+        //save order items
+        foreach ($cart as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item['product']->id,
+                'quantity' => $item['quantity'],
+                'unit_price' => $item['price']
+            ]);
+        }
         
-        // امسح السلة من Redis
+        // Clear the cart
         $this->cartService->clear();
         
-        // Redirect to success page
-        return redirect()->route('checkout.success')->with('success', 'Order placed successfully!');
+        // Redirect to success page مع Order ID
+        return redirect()->route('checkout.success', $order->id)
+            ->with('success', 'Order placed successfully!');
     }
     
     /**
      * Show order success page
      */
-    public function success()
+    public function success($orderId)
     {
-        $order = session('last_order');
+        $order = Order::with('items.product')->find($orderId);
         
         if (!$order) {
-            return redirect()->route('shop')->with('error', 'No order found');
+            return redirect()->route('shop')->with('error', 'Order not found');
+        }
+        
+        // Check if the user is authorized to view this order
+        if (auth()->check()) {
+            if ($order->user_id !== auth()->id()) {
+                return redirect()->route('shop')->with('error', 'Unauthorized access');
+            }
+        } else {
+            if ($order->session_id !== session()->getId()) {
+                return redirect()->route('shop')->with('error', 'Unauthorized access');
+            }
         }
         
         return view('checkout.success', compact('order'));

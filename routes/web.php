@@ -76,13 +76,16 @@ Route::prefix('cart')->group(function () {
 
 
 
+
 // Checkout Routes
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
 
-
+Route::get('/api/orders', function () {
+    return \App\Models\Order::all();
+});
 
 // // Debug Routes (للاختبار فقط)
 // Route::get('/debug-cart', function () {

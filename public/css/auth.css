@@ -140,7 +140,7 @@
     font-size: 1rem;
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     background: #f8fafc;
-    color: #2d3748;
+    color: #ffffff !important;
 }
 
 .form-control::placeholder {
@@ -154,6 +154,7 @@
     background: white;
     box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     transform: translateY(-1px);
+    color: #ffffff !important;
 }
 
 .form-control:hover:not(:focus) {
