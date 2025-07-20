@@ -189,7 +189,7 @@ class ShopEnhancements {
         }
     }
     
-    // Enhanced View Toggle with Smooth Transitions - FIXED TO NOT INTERFERE WITH LINKS
+    // Enhanced View Toggle with Smooth Transitions - FIXED FOR BOTH LINKS AND BUTTONS
     enhanceViewToggle() {
         const viewToggles = document.querySelectorAll('.view-toggle');
         const productsGrid = document.getElementById('productsGrid');
@@ -199,8 +199,8 @@ class ShopEnhancements {
                 const isButton = this.tagName === 'BUTTON';
                 const isLink = this.tagName === 'A';
                 
+                // Only prevent default for buttons (categories), let links work normally
                 if (isButton) {
-                    // Only handle buttons (for categories view)
                     e.preventDefault();
                     
                     // Prevent multiple rapid clicks
@@ -245,19 +245,16 @@ class ShopEnhancements {
                         this.createRipple(this);
                     }
                 } else if (isLink) {
-                    // For links (products), DO NOT prevent default - let them navigate normally!
-                    // Just add a nice loading effect
-                    const view = this.dataset.view;
-                    this.showEnhancedNotification(`Switching to ${view} view...`, 'info');
-                    
-                    // Add subtle loading effect but don't prevent navigation
+                    // For links (products), just add smooth transition effect
                     if (productsGrid) {
-                        productsGrid.style.transition = 'opacity 0.1s ease';
-                        productsGrid.style.opacity = '0.9';
+                        const view = this.dataset.view;
+                        this.showEnhancedNotification(`Switching to ${view} view...`, 'info');
+                        
+                        // Add smooth loading effect
+                        productsGrid.style.transition = 'opacity 0.2s ease';
+                        productsGrid.style.opacity = '0.8';
                     }
-                    
-                    // DON'T PREVENT DEFAULT - LET THE LINK WORK!
-                    // The page will navigate and reload with the new view
+                    // Let the link navigate normally (don't prevent default)
                 }
             }.bind(this));
         });

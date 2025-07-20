@@ -5,6 +5,7 @@
 @push('styles')
 <link href="{{ asset('css/shop.css') }}" rel="stylesheet">
 <link href="{{ asset('css/right-sidebar-filter.css') }}" rel="stylesheet">
+<link href="{{ asset('css/enhanced-shop-header.css') }}" rel="stylesheet">
 @endpush
 
 @section('body-class', 'shop-page')
@@ -88,648 +89,369 @@
                     @endif
                 </div>
 
-                <!-- Enhanced Pagination -->
-                @if($products && $products->hasPages())
-                <div class="shop-pagination">
-                    <div class="pagination-container">
-                        {{ $products->links('shop.parts.pagination') }}
-                    </div>
-                </div>
-                @endif
+             <!-- Enhanced Pagination -->
+@if(request('view') != 'categories' && isset($products) && method_exists($products, 'hasPages') && $products->hasPages())
+<div class="shop-pagination">
+    <div class="pagination-container">
+        {{ $products->links('shop.parts.pagination') }}
+    </div>
+</div>
+@endif
             </div>
         </div>
     </div>
 </section>
 
 <!-- Mobile Filter Button (Mobile Only) -->
-@include('shop.parts.mobile-filter-button')
+{{-- @include('shop.parts.mobile-filter-button') --}}
 
 <!-- Mobile Filter Panel (Mobile Only) -->
 @include('shop.parts.mobile-filter-panel')
 
 @endsection
 
+// استبدل الكود في @push('scripts') بهذا:
+
 @push('scripts')
 <script src="{{ asset('js/main.js') }}"></script>
 <script src="{{ asset('js/mobile-filter.js') }}"></script>
+<script src="{{ asset('js/unified-filter-controller.js') }}"></script>
 <script src="{{ asset('js/shop-enhancements.js') }}"></script>
-<script src="{{ asset('js/right-sidebar-filter.js') }}"></script>
-<script src="{{ asset('js/sort-functionality-fix.js') }}"></script>
 
 <script>
-// Enhanced Shop Functions
+console.log('🛒 Final Cart System Loading...');
+
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Sort functionality with enhanced feedback
-    window.updateSort = function(sortValue) {
-        const url = new URL(window.location);
-        url.searchParams.set('sort', sortValue);
+    // Find cart icon
+    const cartIcon = document.querySelector('a[href*="cart"]');
+    let cartBadge = null;
+    
+    if (cartIcon) {
+        cartBadge = cartIcon.querySelector('.cart-badge');
         
-        // Show loading feedback
-        const sortSelect = document.querySelector('.shop-sort');
-        if (sortSelect) {
-            sortSelect.disabled = true;
-            sortSelect.style.opacity = '0.7';
+        if (!cartBadge) {
+            cartBadge = document.createElement('span');
+            cartBadge.className = 'cart-badge';
+            cartBadge.style.cssText = `
+                position: absolute !important;
+                top: -8px !important;
+                right: -8px !important;
+                background: #ef4444 !important;
+                color: white !important;
+                border-radius: 50% !important;
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 0.75rem !important;
+                font-weight: 700 !important;
+                display: none !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 1000 !important;
+                transition: all 0.3s ease !important;
+            `;
+            cartIcon.style.position = 'relative';
+            cartIcon.appendChild(cartBadge);
+            console.log('✅ Badge created');
         }
-        
-        // Add loading notification
-        showEnhancedNotification('Sorting products...', 'info');
-        
-        // Navigate to new URL
-        window.location.href = url.toString();
-    };
-    
-    // Enhanced view toggle with smooth transitions
-    document.querySelectorAll('.view-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            // Update active state
-            document.querySelectorAll('.view-toggle').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            
-            const view = this.dataset.view;
-            const grid = document.getElementById('productsGrid');
-            
-            // Add transition class
-            grid.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-            
-            if (view === 'list') {
-                grid.classList.add('list-view');
-                showEnhancedNotification('Switched to list view', 'info');
-            } else {
-                grid.classList.remove('list-view');
-                showEnhancedNotification('Switched to grid view', 'info');
-            }
-            
-            // Animate cards
-            const cards = grid.querySelectorAll('.product-card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.animation = view === 'list' ? 
-                        'morphToList 0.3s ease forwards' : 
-                        'morphToGrid 0.3s ease forwards';
-                }, index * 30);
-            });
-            
-            // Add ripple effect
-            createRippleEffect(this);
-        });
-    });
-    
-    // Filter form functionality with better UX
-    const filterForm = document.getElementById('filterForm');
-    if (filterForm) {
-        const inputs = filterForm.querySelectorAll('input, select');
-        let filterTimeout;
-        
-        inputs.forEach(input => {
-            input.addEventListener('change', function() {
-                clearTimeout(filterTimeout);
-                
-                // Add loading state
-                this.disabled = true;
-                this.style.opacity = '0.7';
-                
-                // Show loading notification
-                showEnhancedNotification('Applying filters...', 'info');
-                
-                // Debounce form submission
-                filterTimeout = setTimeout(() => {
-                    filterForm.submit();
-                }, 300);
-            });
-        });
     }
     
-    // Enhanced product interactions
-    initializeProductInteractions();
-    
-    // Initialize lazy loading
-    initializeLazyLoading();
-});
-
-// Enhanced product card interactions
-function initializeProductInteractions() {
-    const productCards = document.querySelectorAll('.product-card');
-    
-    productCards.forEach((card, index) => {
-        // Staggered entrance animation
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.classList.add('card-fade-in');
+    // Enhanced update badge function with retry mechanism
+    async function updateBadge(maxRetries = 3) {
+        if (!cartBadge) return;
         
-        // Enhanced hover effects
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-            this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
-            
-            // Animate product image
-            const img = this.querySelector('.product-image');
-            if (img) {
-                img.style.transform = 'scale(1.05)';
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🔄 Updating badge (attempt ${attempt}/${maxRetries})...`);
+                
+                const response = await fetch('/cart/count?' + Date.now(), {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const count = data.total_quantity || 0;
+                
+                console.log(`📊 Cart count: ${count} (attempt ${attempt})`);
+                
+                // Update badge with animation
+                const oldCount = parseInt(cartBadge.textContent) || 0;
+                cartBadge.textContent = count;
+                
+                if (count > 0) {
+                    cartBadge.style.display = 'flex';
+                    
+                    // Add bounce animation if count increased
+                    if (count > oldCount) {
+                        cartBadge.style.transform = 'scale(1.3)';
+                        setTimeout(() => {
+                            cartBadge.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                } else {
+                    cartBadge.style.display = 'none';
+                }
+                
+                console.log(`✅ Badge updated successfully: ${count}`);
+                return; // Success, exit retry loop
+                
+            } catch (error) {
+                console.warn(`❌ Badge update attempt ${attempt} failed:`, error);
+                
+                if (attempt < maxRetries) {
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+                } else {
+                    console.error('❌ All badge update attempts failed');
+                }
             }
+        }
+    }
+    
+    // Initial update
+    updateBadge();
+    
+    // Find and bind forms
+    function findAndBindForms() {
+        let forms = document.querySelectorAll('.add-to-cart-form');
+        console.log('Found forms with class:', forms.length);
+        
+        if (forms.length === 0) {
+            const productCards = document.querySelectorAll('.product-card');
+            console.log('Found product cards:', productCards.length);
+            
+            productCards.forEach(card => {
+                const productId = extractProductIdFromCard(card);
+                if (productId) {
+                    createCartFormForCard(card, productId);
+                }
+            });
+            
+            forms = document.querySelectorAll('.add-to-cart-form');
+            console.log('Forms after creation:', forms.length);
+        }
+        
+        // Remove existing listeners
+        forms.forEach(form => {
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
         });
         
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-            this.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
-            
-            const img = this.querySelector('.product-image');
-            if (img) {
-                img.style.transform = 'scale(1)';
-            }
-        });
-    });
-}
-
-// Initialize lazy loading for better performance
-function initializeLazyLoading() {
-    const images = document.querySelectorAll('.product-image[data-src]');
-    
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('lazy');
-                    img.classList.add('loaded');
-                    imageObserver.unobserve(img);
+        // Re-select and bind
+        const finalForms = document.querySelectorAll('.add-to-cart-form');
+        
+        finalForms.forEach((form, index) => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log(`🛒 Form ${index + 1} submitted`);
+                
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+                
+                // Loading state
+                button.innerHTML = '⏳ Adding...';
+                button.disabled = true;
+                button.style.opacity = '0.7';
+                
+                try {
+                    const formData = new FormData(this);
+                    console.log('📤 Product ID:', formData.get('product_id'));
+                    
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Product added successfully');
+                        
+                        // Success state
+                        button.innerHTML = '✅ Added!';
+                        button.style.background = '#10b981';
+                        button.style.opacity = '1';
+                        
+                        // Update badge with multiple attempts and delays
+                        setTimeout(() => updateBadge(3), 200);
+                        setTimeout(() => updateBadge(2), 800);
+                        setTimeout(() => updateBadge(1), 1500);
+                        
+                        // Show success notification
+                        showSuccessNotification('Product added to cart!');
+                        
+                        // Reset button
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                            button.style.background = '';
+                            button.style.opacity = '1';
+                            button.disabled = false;
+                        }, 2000);
+                        
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to add product:', error);
+                    
+                    button.innerHTML = '❌ Error';
+                    button.style.background = '#ef4444';
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                        button.style.opacity = '1';
+                        button.disabled = false;
+                    }, 2000);
                 }
             });
         });
         
-        images.forEach(img => {
-            img.classList.add('lazy');
-            imageObserver.observe(img);
-        });
+        console.log(`✅ Bound ${finalForms.length} forms`);
     }
-}
-
-// Quick View functionality
-window.quickView = function(productId) {
-    showEnhancedNotification('Opening quick view...', 'info');
     
-    // Create modal backdrop
-    const backdrop = document.createElement('div');
-    backdrop.className = 'quick-view-backdrop';
-    backdrop.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        backdrop-filter: blur(8px);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    `;
+    // Helper functions
+    function extractProductIdFromCard(card) {
+        const link = card.querySelector('a[href*="/product/"]');
+        if (link) {
+            const match = link.href.match(/\/product\/(\d+)/);
+            if (match) return match[1];
+        }
+        
+        const titleLink = card.querySelector('.product-title a');
+        if (titleLink) {
+            const match = titleLink.href.match(/\/product\/(\d+)/);
+            if (match) return match[1];
+        }
+        
+        return null;
+    }
     
-    // Create modal content
-    const modal = document.createElement('div');
-    modal.className = 'quick-view-modal';
-    modal.style.cssText = `
-        background: white;
-        border-radius: 15px;
-        padding: 2rem;
-        max-width: 600px;
-        width: 90%;
-        max-height: 80vh;
-        overflow-y: auto;
-        transform: scale(0.8);
-        transition: transform 0.3s ease;
-    `;
+    function createCartFormForCard(card, productId) {
+        const existingForm = card.querySelector('.add-to-cart-form');
+        if (existingForm) return;
+        
+        const button = card.querySelector('button:contains("Add to Cart"), .add-to-cart-btn') ||
+                      card.querySelector('button[class*="add"]');
+        
+        if (button && !button.closest('form')) {
+            const form = document.createElement('form');
+            form.action = '/cart/add';
+            form.method = 'POST';
+            form.className = 'add-to-cart-form';
+            
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            const productInput = document.createElement('input');
+            productInput.type = 'hidden';
+            productInput.name = 'product_id';
+            productInput.value = productId;
+            
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'hidden';
+            quantityInput.name = 'quantity';
+            quantityInput.value = '1';
+            
+            button.parentNode.insertBefore(form, button);
+            form.appendChild(csrfInput);
+            form.appendChild(productInput);
+            form.appendChild(quantityInput);
+            form.appendChild(button);
+            
+            button.type = 'submit';
+            
+            console.log(`Created form for product ${productId}`);
+        }
+    }
     
-    modal.innerHTML = `
-        <div class="quick-view-header">
-            <h3>Quick View - Product ${productId}</h3>
-            <button onclick="closeQuickView()" class="close-btn">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="quick-view-content">
-            <p>Quick view functionality would load product details here...</p>
-            <div class="quick-view-actions">
-                <button class="btn btn-primary" onclick="addToCart(${productId})">
-                    <i class="fas fa-shopping-cart me-2"></i>Add to Cart
-                </button>
-                <a href="/product/${productId}" class="btn btn-outline">
-                    <i class="fas fa-eye me-2"></i>View Full Details
-                </a>
-            </div>
-        </div>
-    `;
+    function showSuccessNotification(message) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed !important;
+            top: 100px !important;
+            right: 20px !important;
+            background: #10b981 !important;
+            color: white !important;
+            padding: 1rem 1.5rem !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            z-index: 10000 !important;
+            transform: translateX(100%) !important;
+            transition: transform 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+        `;
+        
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
     
-    backdrop.appendChild(modal);
-    document.body.appendChild(backdrop);
+    // Manual test function
+    window.testAddToCart = function() {
+        fetch('/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: 'product_id=16&quantity=1'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('🧪 Manual test result:', data);
+            updateBadge(3);
+        })
+        .catch(error => console.error('🧪 Manual test failed:', error));
+    };
     
-    // Animate in
-    setTimeout(() => {
-        backdrop.style.opacity = '1';
-        modal.style.transform = 'scale(1)';
-    }, 50);
-    
-    // Close on backdrop click
-    backdrop.addEventListener('click', function(e) {
-        if (e.target === backdrop) {
-            closeQuickView();
+    // Listen for page visibility changes
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            setTimeout(() => updateBadge(), 500);
         }
     });
     
-    // Store reference for closing
-    window.currentQuickView = backdrop;
-};
-
-// Close quick view
-window.closeQuickView = function() {
-    const backdrop = window.currentQuickView;
-    if (backdrop) {
-        const modal = backdrop.querySelector('.quick-view-modal');
-        backdrop.style.opacity = '0';
-        modal.style.transform = 'scale(0.8)';
-        
-        setTimeout(() => {
-            backdrop.remove();
-            window.currentQuickView = null;
-        }, 300);
-    }
-};
-
-// Enhanced wishlist functionality
-window.addToWishlist = function(productId) {
-    const btn = event.target.closest('.wishlist-btn');
-    const icon = btn.querySelector('i');
+    // Periodic update (every 30 seconds)
+    setInterval(() => updateBadge(), 30000);
     
-    // Toggle wishlist state
-    const isInWishlist = icon.classList.contains('fas');
+    // Initialize after short delay
+    setTimeout(findAndBindForms, 1000);
     
-    if (isInWishlist) {
-        icon.classList.remove('fas');
-        icon.classList.add('far');
-        btn.style.color = '#64748b';
-        showEnhancedNotification('Removed from wishlist', 'info');
-    } else {
-        icon.classList.remove('far');
-        icon.classList.add('fas');
-        btn.style.color = '#e53e3e';
-        showEnhancedNotification('Added to wishlist!', 'success');
-        
-        // Add heart animation
-        createHeartAnimation(btn);
-    }
-};
-
-// Create heart animation effect
-function createHeartAnimation(element) {
-    const heart = document.createElement('div');
-    heart.innerHTML = '<i class="fas fa-heart"></i>';
-    heart.style.cssText = `
-        position: absolute;
-        color: #e53e3e;
-        font-size: 1.5rem;
-        pointer-events: none;
-        animation: floatHeart 1s ease-out forwards;
-        z-index: 1000;
-    `;
-    
-    const rect = element.getBoundingClientRect();
-    heart.style.left = rect.left + rect.width / 2 + 'px';
-    heart.style.top = rect.top + 'px';
-    
-    document.body.appendChild(heart);
-    
-    setTimeout(() => heart.remove(), 1000);
-}
-
-// Enhanced add to cart with better feedback
-document.addEventListener('submit', function(e) {
-    if (e.target.classList.contains('add-to-cart-form')) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const button = form.querySelector('.add-to-cart-btn');
-        const originalText = button.innerHTML;
-        const productId = form.querySelector('input[name="product_id"]').value;
-        
-        // Add loading state
-        button.classList.add('loading');
-        button.disabled = true;
-        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Adding...';
-        
-        // Create floating cart animation
-        createFloatingCartIcon(button);
-        
-        // Simulate API call
-        setTimeout(() => {
-            // Success state
-            button.innerHTML = '<i class="fas fa-check me-2"></i>Added!';
-            button.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            
-            // Update cart badge
-            updateCartBadgeAnimated();
-            
-            // Show success notification
-            showEnhancedNotification('Product added to cart!', 'success');
-            
-            // Reset button after delay
-            setTimeout(() => {
-                button.innerHTML = originalText;
-                button.disabled = false;
-                button.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
-                button.classList.remove('loading');
-                
-                // Actually submit the form
-                form.submit();
-            }, 2000);
-        }, 1000);
-    }
+    console.log('✅ Final cart system loaded');
+    console.log('🧪 Type testAddToCart() to test manually');
 });
 
-// Create floating cart icon animation
-function createFloatingCartIcon(btn) {
-    const cartIcon = document.createElement('div');
-    cartIcon.innerHTML = '<i class="fas fa-shopping-cart"></i>';
-    cartIcon.style.cssText = `
-        position: fixed;
-        z-index: 9999;
-        color: #4f46e5;
-        font-size: 1.5rem;
-        pointer-events: none;
-        animation: floatToCart 1s ease-out forwards;
-    `;
-    
-    const btnRect = btn.getBoundingClientRect();
-    cartIcon.style.left = btnRect.left + btnRect.width / 2 + 'px';
-    cartIcon.style.top = btnRect.top + 'px';
-    
-    document.body.appendChild(cartIcon);
-    
-    setTimeout(() => cartIcon.remove(), 1000);
+// Helper for jQuery :contains selector if needed
+if (typeof jQuery !== 'undefined') {
+    jQuery.expr[':'].contains = function(a, i, m) {
+        return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+    };
 }
-
-// Update cart badge with animation
-function updateCartBadgeAnimated() {
-    const cartBadge = document.querySelector('.cart-badge');
-    if (cartBadge) {
-        cartBadge.style.animation = 'cartBounce 0.6s ease';
-        
-        const currentCount = parseInt(cartBadge.textContent) || 0;
-        cartBadge.textContent = currentCount + 1;
-        
-        setTimeout(() => {
-            cartBadge.style.animation = '';
-        }, 600);
-    }
-}
-
-// Create ripple effect for buttons
-function createRippleEffect(element) {
-    const ripple = document.createElement('div');
-    const rect = element.getBoundingClientRect();
-    const size = Math.max(rect.width, rect.height);
-    
-    ripple.style.cssText = `
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(79, 70, 229, 0.3);
-        transform: scale(0);
-        animation: ripple 0.6s ease-out;
-        pointer-events: none;
-        width: ${size}px;
-        height: ${size}px;
-        left: 50%;
-        top: 50%;
-        margin-left: -${size/2}px;
-        margin-top: -${size/2}px;
-    `;
-    
-    element.style.position = 'relative';
-    element.appendChild(ripple);
-    
-    setTimeout(() => ripple.remove(), 600);
-}
-
-// Clear all filters function
-window.clearAllFilters = function() {
-    showEnhancedNotification('Clearing all filters...', 'info');
-    setTimeout(() => {
-        window.location.href = '{{ route("shop") }}';
-    }, 500);
-};
-
-// Keyboard shortcuts
-document.addEventListener('keydown', function(e) {
-    // Ctrl/Cmd + K for search focus
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.focus();
-            showEnhancedNotification('Search focused', 'info');
-        }
-    }
-    
-    // Ctrl + Shift + F for filter toggle
-    if (e.ctrlKey && e.shiftKey && e.key === 'F') {
-        e.preventDefault();
-        if (window.desktopFilterSidebar) {
-            window.desktopFilterSidebar.toggle();
-        }
-    }
-    
-    // ESC to close any open modals
-    if (e.key === 'Escape') {
-        if (window.currentQuickView) {
-            closeQuickView();
-        }
-    }
-});
-
-// Performance optimization: Debounced scroll handler
-let isScrolling = false;
-window.addEventListener('scroll', function() {
-    if (!isScrolling) {
-        window.requestAnimationFrame(function() {
-            handleScroll();
-            isScrolling = false;
-        });
-        isScrolling = true;
-    }
-});
-
-function handleScroll() {
-    const scrollY = window.scrollY;
-    
-    // Parallax effect for hero
-    const hero = document.querySelector('.shop-hero');
-    if (hero) {
-        hero.style.transform = `translateY(${scrollY * 0.3}px)`;
-    }
-    
-    // Reveal cards on scroll
-    const cards = document.querySelectorAll('.product-card:not(.revealed)');
-    cards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        if (rect.top < window.innerHeight - 100) {
-            card.classList.add('revealed');
-            card.style.animation = 'revealCard 0.6s ease forwards';
-        }
-    });
-}
-
-// Enhanced CSS animations
-const enhancedCSS = `
-@keyframes floatToCart {
-    0% { transform: scale(1) translateY(0); opacity: 1; }
-    50% { transform: scale(1.2) translateY(-20px); }
-    100% { transform: scale(0.5) translateY(-60px) translateX(200px); opacity: 0; }
-}
-
-@keyframes floatHeart {
-    0% { transform: scale(1) translateY(0); opacity: 1; }
-    100% { transform: scale(2) translateY(-50px); opacity: 0; }
-}
-
-@keyframes cartBounce {
-    0%, 20%, 53%, 80%, 100% { transform: scale(1); }
-    40%, 43% { transform: scale(1.3); }
-    70% { transform: scale(1.1); }
-    90% { transform: scale(1.05); }
-}
-
-@keyframes ripple {
-    to { transform: scale(4); opacity: 0; }
-}
-
-@keyframes morphToList {
-    from { transform: scale(1); }
-    to { transform: scale(1.02); }
-}
-
-@keyframes morphToGrid {
-    from { transform: scale(1.02); }
-    to { transform: scale(1); }
-}
-
-@keyframes revealCard {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes card-fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.card-fade-in {
-    animation: card-fade-in 0.6s ease forwards;
-}
-
-.product-image.lazy {
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.product-image.loaded {
-    opacity: 1;
-}
-
-.no-products {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: #718096;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.no-products-icon {
-    font-size: 4rem;
-    margin-bottom: 2rem;
-    color: #cbd5e0;
-    animation: pulse 2s infinite;
-}
-
-.no-products h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: #4a5568;
-    font-weight: 700;
-}
-
-.no-products p {
-    margin-bottom: 2rem;
-    font-size: 1rem;
-    line-height: 1.6;
-}
-
-.no-products-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.quick-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.quick-view-header h3 {
-    margin: 0;
-    color: #2d3748;
-    font-weight: 700;
-}
-
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #a0aec0;
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.close-btn:hover {
-    color: #e53e3e;
-}
-
-.quick-view-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    justify-content: center;
-}
-
-.dense-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
-    gap: 1rem !important;
-}
-
-.dense-grid .product-card {
-    transform: scale(0.95);
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-`;
-
-// Inject enhanced CSS
-const style = document.createElement('style');
-style.textContent = enhancedCSS;
-document.head.appendChild(style);
-
 </script>
 @endpush

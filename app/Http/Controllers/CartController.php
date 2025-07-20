@@ -8,76 +8,58 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-     protected $cartService;
+    protected $cartService;
 
     public function __construct(CartService $cartService)
     {
         $this->cartService = $cartService;
     }
 
-   public function index()
-{
-    try {
-        // Debug info محسن
-        // $debugInfo = $this->cartService->getDebugInfo();
-        
-        $cartItems = $this->cartService->get();
-        
-        $debugInfo['step2_cart_items'] = $cartItems;
-        $debugInfo['step3_is_empty'] = empty($cartItems);
-        
-        if (empty($cartItems)) {
+    public function index()
+    {
+        try {
+            $cartItems = $this->cartService->get();
+            
+            if (empty($cartItems)) {
+                return view('cart.index', [
+                    'cart' => [],
+                    'total' => 0,
+                    'count' => 0
+                ]);
+            }
+            
+            $productIds = array_keys($cartItems);
+            $products = Product::whereIn('id', $productIds)->get();
+            
+            $cart = [];
+            foreach ($cartItems as $productId => $item) {
+                $product = $products->find($productId);
+                
+                if ($product) {
+                    $cart[] = [
+                        'product' => $product,
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'] ?? $product->price,
+                        'subtotal' => ($item['price'] ?? $product->price) * $item['quantity']
+                    ];
+                }
+            }
+
+            return view('cart.index', [
+                'cart' => $cart,
+                'total' => $this->cartService->subtotal(),
+                'count' => $this->cartService->count()
+            ]);
+            
+        } catch (\Exception $e) {
             return view('cart.index', [
                 'cart' => [],
                 'total' => 0,
                 'count' => 0,
-                'debug_info' => $debugInfo
+                'error' => $e->getMessage()
             ]);
         }
-        
-        $productIds = array_keys($cartItems);
-        $products = Product::whereIn('id', $productIds)->get();
-        
-        $debugInfo['step4_products_found'] = $products->count();
-        
-        $cart = [];
-        foreach ($cartItems as $productId => $item) {
-            $product = $products->find($productId);
-            
-            if ($product) {
-                $cart[] = [
-                    'product' => $product,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'] ?? $product->price,
-                    'subtotal' => ($item['price'] ?? $product->price) * $item['quantity']
-                ];
-            }
-        }
-
-        $debugInfo['step5_final_cart_count'] = count($cart);
-
-        return view('cart.index', [
-            'cart' => $cart,
-            'total' => $this->cartService->subtotal(),
-            'count' => $this->cartService->count(),
-            'debug_info' => $debugInfo
-        ]);
-        
-    } catch (\Exception $e) {
-        return view('cart.index', [
-            'cart' => [],
-            'total' => 0,
-            'count' => 0,
-            'error' => $e->getMessage(),
-            'debug_info' => [
-                'error' => true,
-                'message' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
-            ]
-        ]);
     }
-}
 
     public function add(Request $request)
     {
@@ -108,6 +90,16 @@ class CartController extends Controller
                 'slug' => $product->slug
             ]
         );
+
+        // إذا كان طلب AJAX، أرجع JSON
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Item added to cart successfully!',
+                'cart_count' => $this->cartService->count(),
+                'total_quantity' => $this->cartService->totalQuantity()
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Item added to cart successfully!');
     }
@@ -142,10 +134,28 @@ class CartController extends Controller
 
     public function count()
     {
-        return response()->json([
-            'count' => $this->cartService->count(),
-            'total_quantity' => $this->cartService->totalQuantity()
-        ]);
+        try {
+            $cartItems = $this->cartService->get();
+            $itemCount = count($cartItems);
+            $totalQuantity = $this->cartService->totalQuantity();
+            
+            return response()->json([
+                'success' => true,
+                'count' => $itemCount,
+                'total_quantity' => $totalQuantity,
+                'debug' => [
+                    'cart_contents' => $cartItems,
+                    'cart_key' => $this->cartService->getCartKey()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'count' => 0,
+                'total_quantity' => 0,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function items()

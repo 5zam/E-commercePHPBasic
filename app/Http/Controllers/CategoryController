@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Category;
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class CategoryController extends Controller
+{
+    public function index()
+    {
+        $categories = Category::withCount('products')
+            ->whereNull('parent_id') // Only parent categories
+            ->orderBy('name')
+            ->get();
+
+        return view('shop.categories', compact('categories'));
+    }
+
+    public function show($slug)
+    {
+        $category = Category::where('slug', $slug)->firstOrFail();
+        
+        $products = Product::where('category_id', $category->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return view('shop.category', compact('category', 'products'));
+    }
+
+    public function products($slug, Request $request)
+    {
+        $category = Category::where('slug', $slug)->firstOrFail();
+        
+        $query = Product::where('category_id', $category->id);
+
+        // Search within category
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        // Price range filter
+        if ($request->filled('min_price') || $request->filled('max_price')) {
+            $query->priceRange($request->min_price, $request->max_price);
+        }
+
+        // Sort options
+        $sortBy = $request->get('sort', 'newest');
+        switch ($sortBy) {
+            case 'price_low':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_high':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'name':
+                $query->orderBy('title', 'asc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->appends(request()->query());
+
+        return view('shop.category', compact('category', 'products'));
+    }
+}

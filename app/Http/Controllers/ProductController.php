@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -10,6 +11,21 @@ class ProductController extends Controller
      public function index(Request $request)
     {
         $query = Product::query();
+
+        // if the request is for categories view
+        if ($request->get('view') == 'categories') {
+            $categories = Category::withCount('products')->get();
+            $products = collect(); // Empty collection
+            
+            // add variable for brands and price range
+            $brands = collect([]);
+            $priceRange = [
+                'min' => 0,
+                'max' => 500
+            ];
+            
+            return view('shop.index', compact('categories', 'products', 'brands', 'priceRange'));
+        }
 
         // Search functionality - Fixed field names
         if ($request->filled('search')) {
@@ -48,7 +64,7 @@ class ProductController extends Controller
         $products = $query->paginate(12)->appends(request()->query());
         
         // Simple filter options
-        $categories = collect([]);
+        $categories = Category::withCount('products')->get();
         $brands = collect([]);
         $priceRange = [
             'min' => 0,
